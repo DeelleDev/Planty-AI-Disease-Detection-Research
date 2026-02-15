@@ -1,0 +1,88 @@
+@startuml
+
+!theme vibrant
+
+
+
+entity PlantEntity {
+ + id: Long <<PK>>
+ --
+ + name: String
+ + botanicalName: String
+ + scientificName: String
+ + alsoKnownAs: String
+ + description: String
+ + genus: String
+ + family: String
+ + order: String
+ + plantClass: String
+ + division: String
+ + temperature: String
+ + light: String
+ + hardinessZone: String
+ + growthRate: String
+ + soilType: String
+ + soilDrainage: String
+ + soilPH: String
+ + watering: String
+ + fertilizer: String
+ + pruning: String
+ + propagation: String
+ + humidity: String
+ + transplanting: String
+ + commonPestsAndDiseases: String
+ + features: String
+ + uses: String
+ + interestingFacts: String
+ + imageUrl: String
+ + imageUrl1: String
+ + imageUrl2: String
+ + imageUrl3: String
+}
+
+
+
+entity DiseaseEntity {
+ + id: Long <<PK>>
+ --
+ + plantId: Long <<FK>>
+ + name: String
+ + fullName: String
+ + scientificName: String
+ + alsoKnownAs: String
+ + description: String
+ + symptoms: String
+ + treatment: String
+ + prevention: String
+ + imageUrl: String
+ + imageUrl1: String
+ + imageUrl2: String
+ + imageUrl3: String
+}
+
+
+
+entity HistoryEntity {
+ + id: Long <<PK>> {autogenerate}
+ --
+ + timestamp: Long
+ + imagePath: String
+ + topPredictions: String (JSON)
+ + latitude: Double <<nullable>>
+ + longitude: Double <<nullable>>
+}
+
+
+
+entity FavoriteEntity {
+ + uniqueId: Long <<PK>> {autogenerate}
+ + id: Long (references PlantEntity.id or DiseaseEntity.id)
+ + type: String ("plant" or "disease")
+}
+
+PlantEntity ||--o{ DiseaseEntity : "has"
+
+
+
+
+@enduml

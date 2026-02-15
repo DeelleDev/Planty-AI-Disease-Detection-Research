@@ -1,0 +1,846 @@
+@startuml
+hide empty members
+skinparam classAttributeIconSize 0
+left to right direction
+
+
+class ResultModel {
++ plant: PlantModel
++ disease: DiseaseModel?
++ confidence: Float
+}
+class LocationModel {
++ latitude: Double
++ longitude: Double
+}
+interface PlantRepository {
++ Flow<List<PlantModel>> getAllPlants()
++ Flow<PlantModel> getPlantById(Long)
++ Flow<List<DiseaseModel>> getDiseasesByPlantId(Long)
++ Flow<DiseaseModel> getDiseaseById(Long)
++ Long insertDiagnosis(ByteArray, String, List<PredictionModel>, LocationModel?)
++ Flow<List<HistoryModel>> getLastHistory()
++ Flow<List<HistoryModel>> getAllHistory()
++ void clearHistory()
++ Flow<HistoryModel?> getHistoryById(Long)
++ Boolean isFavorite(Long,String)
++ Boolean toggleFavorite(Long,String)
++ List<FavoriteModel> getAllFavorite()
++ Resource<Unit> uploadDiagnosisToRemote(ByteArray, String, LocationModel?)
++ Resource<Unit> submitFeedbackToRemote(Long, String, String, String, String?, ByteArray, LocationModel?)
+}
+
+class MainActivity {
++ void onCreate(Bundle?)
+}
+
+class PlantListViewModel {
+- getAllPlantsUseCase: GetAllPlantsUseCase
+- savePlantSearchUseCase: SavePlantSearchUseCase
+- getPlantSearchesUseCase: GetPlantSearchesUseCase
+- _plants: MutableStateFlow<List<PlantModel>>
++ plants: StateFlow<List<PlantModel>>
++ recentSearches:  mutableStateListOf<String>()
+- void loadRecentSearches()
++ void saveSearch(String)
+- void observePlants()
+}
+
+
+interface FavoriteDao {
++ FavoriteEntity? getFavoriteById(Long,String)
++ void addToFavorites(FavoriteEntity)
++ void removeFromFavorites(FavoriteEntity)
++ List<FavoriteEntity> getAllOnce()
+}
+
+class GetAllowUploadUseCase {
+- preferencesRepository: PreferencesRepository
++ Flow<Boolean?> invoke()
+}
+class PlantModel {
++ id: Long
++ name: String
++ botanicalName: String
++ scientificName: String
++ alsoKnownAs: String
++ description: String
++ genus: String
++ family: String
++ order: String
++ plantClass: String
++ division: String
++ temperature: String
++ light: String
++ hardinessZone: String
++ growthRate: String
++ soilType: String
++ soilDrainage: String
++ soilPH: String
++ watering: String
++ fertilizer: String
++ pruning: String
++ propagation: String
++ humidity: String
++ transplanting: String
++ commonPestsAndDiseases: String
++ features: String
++ uses: String
++ interestingFacts: String
++ imageUrl: String
++ images: List<String>
+}
+class TFLiteAnalyzer {
+- appContext: Context
+- imageSize: Int
+- numClasses: Int
+- interpreter: Interpreter
+- classes: List<String>
++ List<PredictionModel> analyzeImage(Bitmap, suspend (Float) -> Unit)
+- String getLabel(Int)
++ void closeInterpreter()
+}
+class SearchHistoryRepositoryImpl$PreferencesKeys {
++ RECENT_PLANTS_SEARCHES: Preferences.Key<Set<String>>
++ RECENT_FAVORITES_SEARCHES: Preferences.Key<Set<String>>
++ RECENT_HISTORY_SEARCHES: Preferences.Key<Set<String>>
+}
+
+class SearchHistoryRepositoryImpl {
+- context: Context
+- void saveSearchOrderedInternal(DataStore<Preferences>, Preferences.Key<Set<String>>, String)
+- List<String> getSearchesInternal(DataStore<Preferences>, Preferences.Key<Set<String>>)
++ void savePlantSearch(String)
++ List<String> getPlantSearches()
++ void saveFavoriteSearch(String)
++ List<String> getFavoriteSearches()
++ void saveHistorySearch(String)
++ List<String> getHistorySearches()
+}
+
+class FavoritesListViewModel {
+- getAllFavoriteUseCase: GetAllFavoriteUseCase
+- getFavoriteSearchesUseCase: GetFavoriteSearchesUseCase
+- saveFavoriteSearchUseCase: SaveFavoriteSearchUseCase
+- _favorites: MutableStateFlow<List<FavoriteModel>>
++ favorites: StateFlow<List<FavoriteModel>>
++ recentSearches: mutableStateListOf<String>()
+- void loadRecentSearches()
++ void reloadFavorites()
++ void saveSearch(String)
+}
+class TransformPredictionsUseCase {
+- getPlantByIdUseCase: GetPlantByIdUseCase
+- getDiseaseByIdUseCase: GetDiseaseByIdUseCase
++ List<ResultModel> invoke(List<PredictionModel>)
+- PlantModel createDefaultPlantModel(String)
+}
+class FavoriteModel {
++ plant: PlantModel
++ disease: DiseaseModel?
+}
+class GetPlantSearchesUseCase {
+- searchHistoryRepository: SearchHistoryRepository
++ List<String> invoke()
+}
+class HistoryModel {
++ id: Long
++ timestamp: Long
++ imagePath: String
++ topPredictions: List<PredictionModel>
++ latitude: Double?
++ longitude: Double?
+}
+class SaveHistorySearchUseCase {
+- searchHistoryRepository: SearchHistoryRepository
++ void invoke(String)
+}
+class AppModule {
++ AppDatabase provideDatabase(Context)
++ PlantDao providePlantDao(AppDatabase)
++ DiseaseDao provideDiseaseDao(AppDatabase)
++ FavoriteDao provideFavoriteDao(AppDatabase)
++ HistoryDao provideHistoryDao(AppDatabase)
++ PlantRepository providePlantRepository(Context, AppDatabase, RemoteDataSource)
++ WeatherApiService provideWeatherApiService()
++ WeatherRepository provideWeatherRepository(WeatherApiService)
++ PreferencesRepository providePreferencesRepository(Context)
++ SearchHistoryRepository provideSearchHistoryRepository(Context)
++ RemoteDataSource provideRemoteDataSource()
++ String provideWeatherApiKey()
+}
+
+class PlantDetailViewModel {
+- getPlantByIdUseCase: GetPlantByIdUseCase
+- getDiseasesByPlantIdUseCase: GetDiseasesByPlantIdUseCase
+- _plant: MutableStateFlow<PlantModel>
++ plant: StateFlow<PlantModel>
+- _diseases: MutableStateFlow<List<DiseaseModel>>
++ diseases: StateFlow<List<DiseaseModel>>
++ void loadPlantDetails(Long)
+}
+class FavoriteEntity {
++ uniqueId: Long
++ id: Long
++ type: String
+}
+
+abstract class AppDatabase {
++ PlantDao plantDao()
++ DiseaseDao diseaseDao()
++ FavoriteDao favoriteDao()
++ HistoryDao historyDao()
+}
+
+
+
+class Resource$Success<T> {
+..> data : T
+}
+class Resource$Error<T> {
+..> data : T?
+..> message : String
+}
+class Resource$Loading<T> {
+..> data : T?
+}
+class Resource<T> {
++ data: T?
++ message: String?
+}
+
+class DiseaseEntity {
++ id: Long
++ plantId: Long
++ name: String
++ fullName: String
++ scientificName: String
++ alsoKnownAs: String
++ description: String
++ symptoms: String
++ treatment: String
++ prevention: String
++ imageUrl: String
++ imageUrl1: String
++ imageUrl2: String
++ imageUrl3: String
+}
+class MapViewModel {
+- getAllHistoryUseCase: GetAllHistoryUseCase
+- transformPredictionsUseCase: TransformPredictionsUseCase
+- getHistoryByIdUseCase: GetHistoryByIdUseCase
+- _locations: MutableStateFlow<List<Pair<ResultModel, HistoryModel>>>
++ locations: StateFlow<List<Pair<ResultModel, HistoryModel>>>
++ void loadHistory()
++ void loadHistory(Long)
+}
+class WeatherRepositoryImpl {
+- weatherApiService: WeatherApiService
++ Resource<WeatherResponse> getForecast(String,String)
+}
+class ToggleFavoriteUseCase {
+- plantRepository: PlantRepository
++ Boolean invoke(Long,String)
+}
+class WeatherResponse {
++ location: Location
++ forecast: Forecast
+}
+class Location {
++ name: String
++ region: String
++ country: String
++ localtime: String
+}
+class Forecast {
++ forecastday: List<ForecastDay>
+}
+class ForecastDay {
++ date: String
++ day: Day
++ astro: Astro
+}
+class Day {
++ maxtemp_c: Double
++ mintemp_c: Double
++ condition: Condition
+}
+class Condition {
++ text: String
++ icon: String
+}
+class Astro {
++ moon_phase: String
+}
+class SubmitFeedbackToRemoteUseCase {
+- plantRepository: PlantRepository
++ Resource<Unit> invoke(Long,String,String,String,String?,ByteArray,LocationModel?)
+}
+class UserPreferencesImpl$PreferencesKeys {
++ ALLOW_UPLOAD: Preferences.Key<Boolean>
++ ALLOW_GEO_KEY: Preferences.Key<Boolean>
+}
+
+class UserPreferencesImpl {
+- context: Context
++ Flow<Boolean?> getAllowUpload()
++ void setAllowUpload(Boolean)
++ Flow<Boolean?> getAllowGeoKey()
++ void setAllowGeoKey(Boolean)
+}
+
+class SetAllowGeoKeyUseCase {
+- preferencesRepository: PreferencesRepository
++ void invoke(Boolean)
+}
+class GetAllHistoryUseCase {
+- plantRepository: PlantRepository
++ Flow<List<HistoryModel>> invoke()
+}
+class FavoritesViewModel {
+- isFavoriteUseCase: IsFavoriteUseCase
+- toggleFavoriteUseCase: ToggleFavoriteUseCase
+- _id: MutableStateFlow<Long>
++ id: StateFlow<Long>
+- _type: MutableStateFlow<String>
++ type: StateFlow<String>
++ isFavorite: Boolean
++ void loadFavoriteStatus(Long,String)
++ void toggleFavorite(Context,Long,String)
+}
+interface SearchHistoryRepository {
++ void savePlantSearch(String)
++ List<String> getPlantSearches()
++ void saveFavoriteSearch(String)
++ List<String> getFavoriteSearches()
++ void saveHistorySearch(String)
++ List<String> getHistorySearches()
+}
+
+interface HistoryDao {
++ Flow<HistoryEntity?> getHistoryById(Long)
++ Long insert(HistoryEntity)
++ Flow<List<HistoryEntity>> getAll()
++ Flow<List<HistoryEntity>> getLastThree()
++ void clearAll()
+}
+
+class IsFavoriteUseCase {
+- plantRepository: PlantRepository
++ Boolean invoke(Long,String)
+}
+class GetHistorySearchesUseCase {
+- searchHistoryRepository: SearchHistoryRepository
++ List<String> invoke()
+}
+class GetFavoriteSearchesUseCase {
+- searchHistoryRepository: SearchHistoryRepository
++ List<String> invoke()
+}
+class PlantRepositoryImpl {
+- context: Context
+- db: AppDatabase
+- remoteDataSource: RemoteDataSource
++ Flow<List<PlantModel>> getAllPlants()
++ Flow<PlantModel> getPlantById(Long)
++ Flow<List<DiseaseModel>> getDiseasesByPlantId(Long)
++ Flow<DiseaseModel> getDiseaseById(Long)
++ Long insertDiagnosis(ByteArray,String,List<PredictionModel>,LocationModel?)
++ Flow<List<HistoryModel>> getLastHistory()
++ Flow<List<HistoryModel>> getAllHistory()
++ void clearHistory()
++ Flow<HistoryModel?> getHistoryById(Long)
++ Boolean isFavorite(Long,String)
++ Boolean toggleFavorite(Long,String)
++ List<FavoriteModel> getAllFavorite()
+- void loadInitialDataFromAssets()
++ Resource<Unit> uploadDiagnosisToRemote(ByteArray,String,LocationModel?)
++ Resource<Unit> submitFeedbackToRemote(Long,String,String,String,String?,ByteArray,LocationModel?)
+}
+
+class GetDiseaseByIdUseCase {
+- plantRepository: PlantRepository
++ Flow<DiseaseModel> invoke(Long)
+}
+
+class MainApp {
++ plantRepository: PlantRepository
+}
+
+class HistoryViewModel {
+- getAllHistoryUseCase: GetAllHistoryUseCase
+- getDiseaseByIdUseCase: GetDiseaseByIdUseCase
+- getPlantByIdUseCase: GetPlantByIdUseCase
+- saveHistorySearchUseCase: SaveHistorySearchUseCase
+- getHistorySearchesUseCase: GetHistorySearchesUseCase
+- _history: MutableStateFlow<List<Pair<ResultModel, HistoryModel>>>
++ history: StateFlow<List<Pair<ResultModel, HistoryModel>>>
++ recentSearches: mutableStateListOf<String>()
+- void loadRecentSearches()
++ void saveSearch(String)
+- ResultModel getPlantDiseaseInfo(PredictionModel)
+- Long labelToDiseaseId(String)
+- Long labelToPlantId(String)
+}
+class WeatherUtils {
++ String getCurrentDate()
+}
+
+class HomeViewModel {
+- getLastHistoryUseCase: GetLastHistoryUseCase
+- transformPredictionsUseCase: TransformPredictionsUseCase
+- _history: MutableStateFlow<List<Pair<ResultModel, HistoryModel>>>
++ history: StateFlow<List<Pair<ResultModel, HistoryModel>>>
+}
+class GetAllPlantsUseCase {
+- plantRepository: PlantRepository
++ Flow<List<PlantModel>> invoke()
+}
+class PlantEntity {
++ id: Long
++ name: String
++ botanicalName: String
++ scientificName: String
++ alsoKnownAs: String
++ description: String
++ genus: String
++ family: String
++ order: String
++ plantClass: String
++ division: String
++ temperature: String
++ light: String
++ hardinessZone: String
++ growthRate: String
++ soilType: String
++ soilDrainage: String
++ soilPH: String
++ watering: String
++ fertilizer: String
++ pruning: String
++ propagation: String
++ humidity: String
++ transplanting: String
++ commonPestsAndDiseases: String
++ features: String
++ uses: String
++ interestingFacts: String
++ imageUrl: String
++ imageUrl1: String
++ imageUrl2: String
++ imageUrl3: String
+}
+class GetAllowGeoKeyUseCase {
+- preferencesRepository: PreferencesRepository
++ Flow<Boolean?> invoke()
+}
+class Screen$Home {
+}
+class Screen$Favorites {
+}
+class Screen$Camera {
+}
+class Screen$History {
+}
+class Screen$Profile {
+}
+class Screen {
++ route: String
++ icon: Int
++ label: String
+}
+interface DiseaseDao {
++ Flow<List<DiseaseEntity>> getByPlantId(Long)
++ Flow<DiseaseEntity> getById(Long)
++ void insertAll(List<DiseaseEntity>)
+}
+
+interface WeatherApiService {
++ WeatherResponse getForecast(String,String,Int,String)
+}
+
+class GetAllFavoriteUseCase {
+- plantRepository: PlantRepository
++ List<FavoriteModel> invoke()
+}
+class DiseaseDetailViewModel {
+- getDiseaseByIdUseCase: GetDiseaseByIdUseCase
+- _disease: MutableStateFlow<DiseaseModel>
++ disease: StateFlow<DiseaseModel>
++ void loadDiseaseDetails(Long)
+}
+class ClearHistoryUseCase {
+- plantRepository: PlantRepository
++ void invoke()
+}
+interface WeatherRepository {
++ Resource<WeatherResponse> getForecast(String,String)
+}
+
+class FirebaseDataSourceImpl {
+- storage: FirebaseStorage
+- database: DatabaseReference
++ Resource<String> uploadDiagnosisImage(ByteArray,String)
++ Resource<Unit> saveDiagnosisResult(String,String,LocationModel?)
++ Resource<String> uploadFeedbackImage(ByteArray,String)
++ Resource<Unit> saveFeedback(Long,String,String,String,String?,String,LocationModel?)
+}
+
+
+class GetDiseasesByPlantIdUseCase {
+- plantRepository: PlantRepository
++ Flow<List<DiseaseModel>> invoke(Long)
+}
+class WeatherViewModel {
+- context: Context
+- getWeatherUseCase: GetWeatherUseCase
+- _weatherData: MutableLiveData<WeatherResponse?>
++ weatherData: MutableLiveData<WeatherResponse?>
+- _weatherState: MutableLiveData<Resource<WeatherResponse>>
+- void loadWeather()
+}
+class PredictionModel {
++ label: String
++ confidence: Float
+}
+interface PreferencesRepository {
++ Flow<Boolean?> getAllowUpload()
++ void setAllowUpload(Boolean)
++ Flow<Boolean?> getAllowGeoKey()
++ void setAllowGeoKey(Boolean)
+}
+
+class SaveFavoriteSearchUseCase {
+- searchHistoryRepository: SearchHistoryRepository
++ void invoke(String)
+}
+class SettingsViewModel {
+- clearHistoryUseCase: ClearHistoryUseCase
+- getAllowUploadUseCase: GetAllowUploadUseCase
+- setAllowUploadUseCase: SetAllowUploadUseCase
+- getAllowGeoKeyUseCase: GetAllowGeoKeyUseCase
+- setAllowGeoKeyUseCase: SetAllowGeoKeyUseCase
+- _allowUpload: MutableStateFlow<Boolean?>
++ allowUpload: StateFlow<Boolean?>
+- _allowLocation: MutableStateFlow<Boolean?>
++ allowLocation: StateFlow<Boolean?>
++ void setAllowUpload(Boolean)
++ void setAllowLocation(Boolean)
++ void clearDiagnosisHistory()
+}
+
+
+class GetHistoryByIdUseCase {
+- plantRepository: PlantRepository
++ Flow<HistoryModel?> invoke(Long)
+}
+class DiagnoseViewModel {
+- insertDiagnosisUseCase: InsertDiagnosisUseCase
+- uploadDiagnosisToRemoteUseCase: UploadDiagnosisToRemoteUseCase
+- getAllowUploadUseCase: GetAllowUploadUseCase
+- getAllowGeoKeyUseCase: GetAllowGeoKeyUseCase
+- setAllowUploadUseCase: SetAllowUploadUseCase
+- tfLiteAnalyzer: TFLiteAnalyzer
+- appContext: Context
+- _progress: MutableStateFlow<Float>
++ progress: StateFlow<Float>
+- _allowUpload: MutableStateFlow<Boolean?>
++ allowUpload: StateFlow<Boolean?>
+- _allowGeoKey: MutableStateFlow<Boolean?>
+- fusedLocationClient: FusedLocationProviderClient
++ void startAnalysis(Bitmap, (Long) -> Unit)
+- Bitmap prepareBitmapForAnalysis(Bitmap)
+- Boolean hasLocationPermission()
++ void setAllowUpload(Boolean)
+- android.location.Location? getCurrentLocationSuspend()
++ void onCleared()
+}
+class LabelMapper {
++ Long getDiseaseIdFromLabel(String)
++ Long getPlantIdFromLabel(String)
+}
+
+class HistoryEntity {
++ id: Long
++ timestamp: Long
++ imagePath: String
++ topPredictions: String
++ latitude: Double?
++ longitude: Double?
+}
+class DiseaseModel {
++ id: Long
++ plantId: Long
++ name: String
++ fullName: String
++ scientificName: String
++ alsoKnownAs: String
++ description: String
++ symptoms: String
++ treatment: String
++ prevention: String
++ imageUrl: String
++ images: List<String>
+}
+class SetAllowUploadUseCase {
+- preferencesRepository: PreferencesRepository
++ void invoke(Boolean)
+}
+interface PlantDao {
++ Flow<List<PlantEntity>> getAll()
++ Flow<PlantEntity> getById(Long)
++ void insertAll(List<PlantEntity>)
++ Int getCount()
+}
+
+class InsertDiagnosisUseCase {
+- plantRepository: PlantRepository
++ Long invoke(ByteArray,String,List<PredictionModel>,LocationModel?)
+}
+class UploadDiagnosisToRemoteUseCase {
+- plantRepository: PlantRepository
++ Resource<Unit> invoke(ByteArray,String,LocationModel?)
+}
+class GetPlantByIdUseCase {
+- plantRepository: PlantRepository
++ Flow<PlantModel> invoke(Long)
+}
+class SavePlantSearchUseCase {
+- searchHistoryRepository: SearchHistoryRepository
++ void invoke(String)
+}
+class ResultViewModel {
+- getHistoryByIdUseCase: GetHistoryByIdUseCase
+- getAllowGeoKeyUseCase: GetAllowGeoKeyUseCase
+- submitFeedbackToRemoteUseCase: SubmitFeedbackToRemoteUseCase
+- transformPredictionsUseCase: TransformPredictionsUseCase
+- appContext: Context
+- _result: MutableStateFlow<HistoryModel>
++ result: StateFlow<HistoryModel>
+- _info: MutableStateFlow<List<ResultModel>>
++ info: StateFlow<List<ResultModel>>
+- _allowGeoKey: MutableStateFlow<Boolean?>
+- fusedLocationClient: FusedLocationProviderClient
++ void loadHistoryDetails(Long)
+- HistoryModel createDefaultHistoryModel()
++ void submitFeedback(String,String,String?)
+- Boolean hasLocationPermission()
+- android.location.Location? getCurrentLocationSuspend()
+}
+
+
+class SplashViewModel {
+- _isReady: MutableStateFlow<Boolean>
++ isReady: StateFlow<Boolean>
+- void initApp()
+}
+
+
+class GetWeatherUseCase {
+- weatherRepository: WeatherRepository
+- apiKey: String
++ Resource<WeatherResponse> invoke(String)
+}
+class GetLastHistoryUseCase {
+- plantRepository: PlantRepository
++ Flow<List<HistoryModel>> invoke()
+}
+interface RemoteDataSource {
++ Resource<String> uploadDiagnosisImage(ByteArray,String)
++ Resource<Unit> saveDiagnosisResult(String,String,LocationModel?)
++ Resource<String> uploadFeedbackImage(ByteArray,String)
++ Resource<Unit> saveFeedback(Long,String,String,String,String?,String,LocationModel?)
+}
+
+class RetrofitClient {
+- WEATHER_BASE_URL: String
++ weatherApiService: WeatherApiService
+}
+
+
+'Inheritance and Realization
+ComponentActivity <|-[#Blue,thickness=3]- MainActivity
+ViewModel <|-[#Blue,thickness=3]- PlantListViewModel
+SearchHistoryRepository <|.[#Blue,thickness=3]. SearchHistoryRepositoryImpl
+RoomDatabase <|-[#Blue,thickness=3]- AppDatabase
+Resource <|-[#Blue,thickness=3]- Resource$Success
+Resource <|-[#Blue,thickness=3]- Resource$Error
+Resource <|-[#Blue,thickness=3]- Resource$Loading
+PreferencesRepository <|.[#Blue,thickness=3]. UserPreferencesImpl
+Application <|-[#Blue,thickness=3]- MainApp
+Screen <|-[#Blue,thickness=3]- Screen$Home
+Screen <|-[#Blue,thickness=3]- Screen$Favorites
+Screen <|-[#Blue,thickness=3]- Screen$Camera
+Screen <|-[#Blue,thickness=3]- Screen$History
+Screen <|-[#Blue,thickness=3]- Screen$Profile
+RemoteDataSource <|.[#Blue,thickness=3]. FirebaseDataSourceImpl
+ViewModel <|-[#Blue,thickness=3]- SettingsViewModel
+ViewModel <|-[#Blue,thickness=3]- ResultViewModel
+ViewModel <|-[#Blue,thickness=3]- SplashViewModel
+ViewModel <|-[#Blue,thickness=3]- DiagnoseViewModel
+ViewModel <|-[#Blue,thickness=3]- DiseaseDetailViewModel
+ViewModel <|-[#Blue,thickness=3]- FavoritesListViewModel
+ViewModel <|-[#Blue,thickness=3]- FavoritesViewModel
+ViewModel <|-[#Blue,thickness=3]- HistoryViewModel
+ViewModel <|-[#Blue,thickness=3]- HomeViewModel
+ViewModel <|-[#Blue,thickness=3]- MapViewModel
+ViewModel <|-[#Blue,thickness=3]- PlantDetailViewModel
+ViewModel <|-[#Blue,thickness=3]- WeatherViewModel
+PlantRepository <|.[#Blue,thickness=3]. PlantRepositoryImpl
+WeatherRepository <|.[#Blue,thickness=3]. WeatherRepositoryImpl
+
+' Nested/Inner class relationships
+SearchHistoryRepositoryImpl +.[#Green,thickness=3]. SearchHistoryRepositoryImpl$PreferencesKeys
+UserPreferencesImpl +.[#Green,thickness=3]. UserPreferencesImpl$PreferencesKeys
+Screen +.[#Green,thickness=3]. Screen$Home
+Screen +.[#Green,thickness=3]. Screen$Favorites
+Screen +.[#Green,thickness=3]. Screen$Camera
+Screen +.[#Green,thickness=3]. Screen$History
+Screen +.[#Green,thickness=3]. Screen$Profile
+Resource +.[#Green,thickness=3]. Resource$Success
+Resource +.[#Green,thickness=3]. Resource$Error
+Resource +.[#Green,thickness=3]. Resource$Loading
+
+
+' Dependencies (..>)
+PlantListViewModel .[#Purple,thickness=3]up.> GetAllPlantsUseCase
+PlantListViewModel .[#Purple,thickness=3]up.> SavePlantSearchUseCase
+PlantListViewModel .[#Purple,thickness=3]up.> GetPlantSearchesUseCase
+PlantListViewModel .[#Crimson,thickness=3]down.> PlantModel
+
+GetAllowUploadUseCase .[#DarkCyan,thickness=3]left.> PreferencesRepository
+
+SearchHistoryRepositoryImpl .[#Brown,thickness=3]down.> SearchHistoryRepositoryImpl$PreferencesKeys : uses
+
+FavoritesListViewModel .[#Purple,thickness=3]up.> GetAllFavoriteUseCase
+FavoritesListViewModel .[#Purple,thickness=3]up.> GetFavoriteSearchesUseCase
+FavoritesListViewModel .[#Purple,thickness=3]up.> SaveFavoriteSearchUseCase
+FavoritesListViewModel .[#Crimson,thickness=3]down.> FavoriteModel
+
+TransformPredictionsUseCase .[#Indigo,thickness=3]left.> GetPlantByIdUseCase
+TransformPredictionsUseCase .[#Indigo,thickness=3]left.> GetDiseaseByIdUseCase
+TransformPredictionsUseCase .[#Crimson,thickness=3]down.> PredictionModel
+TransformPredictionsUseCase .[#Crimson,thickness=3]down.> ResultModel
+TransformPredictionsUseCase .[#OliveDrab,thickness=3]right.> LabelMapper
+
+GetPlantSearchesUseCase .[#DarkCyan,thickness=3]left.> SearchHistoryRepository
+SaveHistorySearchUseCase .[#DarkCyan,thickness=3]left.> SearchHistoryRepository
+
+AppModule .[#OliveDrab,thickness=3]down.> AppDatabase
+AppModule .[#OliveDrab,thickness=3]down.> PlantDao
+AppModule .[#OliveDrab,thickness=3]down.> DiseaseDao
+AppModule .[#OliveDrab,thickness=3]down.> FavoriteDao
+AppModule .[#OliveDrab,thickness=3]down.> HistoryDao
+AppModule .[#OliveDrab,thickness=3]down.> PlantRepository
+AppModule .[#OliveDrab,thickness=3]down.> RemoteDataSource
+AppModule .[#OliveDrab,thickness=3]down.> WeatherApiService
+AppModule .[#OliveDrab,thickness=3]down.> WeatherRepository
+AppModule .[#OliveDrab,thickness=3]down.> PreferencesRepository
+AppModule .[#OliveDrab,thickness=3]down.> SearchHistoryRepository
+
+PlantDetailViewModel .[#Purple,thickness=3]up.> GetPlantByIdUseCase
+PlantDetailViewModel .[#Purple,thickness=3]up.> GetDiseasesByPlantIdUseCase
+PlantDetailViewModel .[#Crimson,thickness=3]down.> PlantModel
+PlantDetailViewModel .[#Crimson,thickness=3]down.> DiseaseModel
+
+AppDatabase .[#Orange,thickness=3]right.> PlantDao : "provides"
+AppDatabase .[#Orange,thickness=3]right.> DiseaseDao : "provides"
+AppDatabase .[#Orange,thickness=3]right.> FavoriteDao : "provides"
+AppDatabase .[#Orange,thickness=3]right.> HistoryDao : "provides"
+
+MapViewModel .[#Purple,thickness=3]up.> GetAllHistoryUseCase
+MapViewModel .[#Purple,thickness=3]up.> TransformPredictionsUseCase
+MapViewModel .[#Purple,thickness=3]up.> GetHistoryByIdUseCase
+MapViewModel .[#Crimson,thickness=3]down.> ResultModel
+MapViewModel .[#Crimson,thickness=3]down.> HistoryModel
+
+WeatherRepositoryImpl .[#Brown,thickness=3]left.> WeatherApiService
+
+ToggleFavoriteUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+SubmitFeedbackToRemoteUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+
+UserPreferencesImpl .[#Brown,thickness=3]down.> UserPreferencesImpl$PreferencesKeys : uses
+
+SetAllowGeoKeyUseCase .[#DarkCyan,thickness=3]left.> PreferencesRepository
+GetAllHistoryUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+
+FavoritesViewModel .[#Purple,thickness=3]up.> IsFavoriteUseCase
+FavoritesViewModel .[#Purple,thickness=3]up.> ToggleFavoriteUseCase
+
+IsFavoriteUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+GetHistorySearchesUseCase .[#DarkCyan,thickness=3]left.> SearchHistoryRepository
+GetFavoriteSearchesUseCase .[#DarkCyan,thickness=3]left.> SearchHistoryRepository
+
+PlantRepositoryImpl .[#Brown,thickness=3]left.> AppDatabase
+PlantRepositoryImpl .[#Brown,thickness=3]left.> RemoteDataSource
+PlantRepositoryImpl .[#Crimson,thickness=3]down.> LocationModel
+PlantRepositoryImpl .[#Crimson,thickness=3]down.> PredictionModel
+PlantRepositoryImpl .[#SaddleBrown,thickness=3]down.> Resource
+
+GetDiseaseByIdUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+
+MainApp .[#DarkGoldenRod,thickness=3]right.> PlantRepository
+
+HistoryViewModel .[#Purple,thickness=3]up.> GetAllHistoryUseCase
+HistoryViewModel .[#Purple,thickness=3]up.> GetDiseaseByIdUseCase
+HistoryViewModel .[#Purple,thickness=3]up.> GetPlantByIdUseCase
+HistoryViewModel .[#Purple,thickness=3]up.> SaveHistorySearchUseCase
+HistoryViewModel .[#Purple,thickness=3]up.> GetHistorySearchesUseCase
+HistoryViewModel .[#Crimson,thickness=3]down.> ResultModel
+HistoryViewModel .[#Crimson,thickness=3]down.> HistoryModel
+
+HomeViewModel .[#Purple,thickness=3]up.> GetLastHistoryUseCase
+HomeViewModel .[#Purple,thickness=3]up.> TransformPredictionsUseCase
+HomeViewModel .[#Crimson,thickness=3]down.> ResultModel
+HomeViewModel .[#Crimson,thickness=3]down.> HistoryModel
+
+GetAllPlantsUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+GetAllowGeoKeyUseCase .[#DarkCyan,thickness=3]left.> PreferencesRepository
+
+GetAllFavoriteUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+DiseaseDetailViewModel .[#Purple,thickness=3]up.> GetDiseaseByIdUseCase
+DiseaseDetailViewModel .[#Crimson,thickness=3]down.> DiseaseModel
+
+ClearHistoryUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+
+GetDiseasesByPlantIdUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+
+WeatherViewModel .[#Purple,thickness=3]up.> GetWeatherUseCase
+WeatherViewModel .[#Crimson,thickness=3]down.> WeatherResponse
+
+SaveFavoriteSearchUseCase .[#DarkCyan,thickness=3]left.> SearchHistoryRepository
+
+SettingsViewModel .[#Purple,thickness=3]up.> ClearHistoryUseCase
+SettingsViewModel .[#Purple,thickness=3]up.> GetAllowUploadUseCase
+SettingsViewModel .[#Purple,thickness=3]up.> SetAllowUploadUseCase
+SettingsViewModel .[#Purple,thickness=3]up.> GetAllowGeoKeyUseCase
+SettingsViewModel .[#Purple,thickness=3]up.> SetAllowGeoKeyUseCase
+
+GetHistoryByIdUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+
+DiagnoseViewModel .[#Purple,thickness=3]up.> InsertDiagnosisUseCase
+DiagnoseViewModel .[#Purple,thickness=3]up.> UploadDiagnosisToRemoteUseCase
+DiagnoseViewModel .[#Purple,thickness=3]up.> GetAllowUploadUseCase
+DiagnoseViewModel .[#Purple,thickness=3]up.> GetAllowGeoKeyUseCase
+DiagnoseViewModel .[#Purple,thickness=3]up.> SetAllowUploadUseCase
+DiagnoseViewModel .[#OliveDrab,thickness=3]left.> TFLiteAnalyzer
+
+SetAllowUploadUseCase .[#DarkCyan,thickness=3]left.> PreferencesRepository
+InsertDiagnosisUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+UploadDiagnosisToRemoteUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+GetPlantByIdUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+SavePlantSearchUseCase .[#DarkCyan,thickness=3]left.> SearchHistoryRepository
+
+ResultViewModel .[#Purple,thickness=3]up.> GetHistoryByIdUseCase
+ResultViewModel .[#Purple,thickness=3]up.> GetAllowGeoKeyUseCase
+ResultViewModel .[#Purple,thickness=3]up.> SubmitFeedbackToRemoteUseCase
+ResultViewModel .[#Purple,thickness=3]up.> TransformPredictionsUseCase
+ResultViewModel .[#Crimson,thickness=3]down.> HistoryModel
+ResultViewModel .[#Crimson,thickness=3]down.> ResultModel
+
+GetWeatherUseCase .[#DarkCyan,thickness=3]left.> WeatherRepository
+GetLastHistoryUseCase .[#DarkCyan,thickness=3]left.> PlantRepository
+
+RetrofitClient .[#Orange,thickness=3]right.> WeatherApiService : provides
+
+@enduml

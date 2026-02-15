@@ -1,0 +1,150 @@
+@startuml
+skinparam defaultFontSize 26
+skinparam sequenceArrowThickness 3
+
+skinparam sequenceMessageAlign center
+skinparam NoteBackgroundColor #LightYellow
+skinparam DefaultFontName Arial
+skinparam ArrowColor Black
+
+actor User
+participant DiagnoseScreen as DS
+participant CameraPreviewWithCapture as CPWC #lightblue
+participant DiagnoseViewModel as DVM
+participant ":TFLite Interpreter" as TFLITE
+participant DataRepository as REPO
+participant UserPreferences as UP
+participant ":Firebase.storage" as FB_STORAGE
+participant ":Firebase.database" as FB_DB
+participant ":LocationServices" as LOC_SERV
+participant NavController as NAV
+
+
+
+
+User -> DS : Opens Diagnose Screen
+activate DS
+
+alt Camera Capture
+    DS -> CPWC : Display Camera Preview
+    activate CPWC
+    User -> CPWC : Takes Photo
+    CPWC -> DS : onImageCaptured(imageProxy)
+    deactivate CPWC
+    DS -> DS : capturedBitmap = imageProxyToBitmap(imageProxy)
+    DS -> DS : rotatedBitmap = rotate(capturedBitmap)
+    DS -[#black]> DVM : startAnalysis(rotatedBitmap, onFinishCallback)
+    activate DVM
+else Gallery/File Selection
+    alt Gallery
+        User -> DS : Selects "Gallery"
+        DS -> DS : galleryLauncher.launch("image/*")
+        DS <-- User : imageUri selected
+        DS -> DS : selectedBitmap = uriToBitmap(imageUri)
+        DS -[#black]> DVM : startAnalysis(selectedBitmap, onFinishCallback)
+        activate DVM
+    else File Picker
+        User -> DS : Selects "Files"
+        DS -> DS : filePickerLauncher.launch("image/*")
+        DS <-- User : imageUri selected
+        DS -> DS : selectedBitmap = uriToBitmap(imageUri)
+        DS -[#black]> DVM : startAnalysis(selectedBitmap, onFinishCallback)
+        activate DVM
+    end
+end
+
+
+DVM -> DVM : preparedBitmap = prepareBitmapForAnalysis(bitmap)
+
+DVM -> DVM : predictions = analyzeWithTFLiteTop5(preparedBitmap)
+activate DVM #LightCoral
+   note right of DVM : TFLite Sub-process
+
+    DVM -> TFLITE : model = FileUtil.loadMappedFile("model.tflite")
+    activate TFLITE
+    DVM -> TFLITE : interpreter = Interpreter(model)
+    TFLITE -> TFLITE : interpreter.run(inputBuffer, outputBuffer)
+    TFLITE --> DVM : outputBuffer (confidences)
+    DVM -> DVM : top5 = processConfidencesToPredictions(outputBuffer)
+    DVM -> TFLITE : interpreter.close()
+    deactivate TFLITE
+return List<PredictionModel> predictions
+deactivate DVM #LightCoral
+
+
+DVM -> UP : getAllowUpload()
+activate UP
+UP --> DVM : allowUploadValue
+deactivate UP
+        DVM -> UP : getAllowGeoKey()
+        activate UP
+        UP --> DVM : allowGeoKeyValue
+        deactivate UP
+        DVM -> DVM : hasPermission = hasLocationPermission()
+
+opt allowUploadValue is true
+    DVM -> DVM : uploadResultToFirebase(preparedBitmap, toJson(predictions))
+    activate DVM #LightBlue
+        note right of DVM : Firebase Upload Sub-process
+        DVM -> FB_STORAGE : storage.reference.child(...)
+        activate FB_STORAGE
+        FB_STORAGE --> DVM : imageRef
+        deactivate FB_STORAGE
+        DVM -> FB_DB : database.reference
+        activate FB_DB
+        FB_DB --> DVM : dbRef
+        deactivate FB_DB
+        DVM -> DVM : byteArrayData = preparedBitmap.compressToByteArray()
+
+
+        opt allowGeoKeyValue is true AND hasPermission is true
+            DVM -> LOC_SERV : getCurrentLocation()
+            activate LOC_SERV
+            LOC_SERV --> DVM : locationData
+            deactivate LOC_SERV
+        end
+
+        DVM -> FB_STORAGE : imageRef.putBytes(byteArrayData)
+        activate FB_STORAGE
+        FB_STORAGE --> DVM : onSuccessUpload
+        deactivate FB_STORAGE
+        alt onSuccessUpload
+            DVM -> FB_STORAGE : imageRef.downloadUrl
+            activate FB_STORAGE
+            FB_STORAGE --> DVM : uri
+            deactivate FB_STORAGE
+            DVM -> FB_DB : dbRef.child("diagnoses").push().setValue(diagnosisEntryWithUri)
+            activate FB_DB
+            FB_DB --> DVM
+            deactivate FB_DB
+        end
+    deactivate DVM #LightBlue
+end
+
+opt allowGeoKeyValue is true AND hasPermission is true
+    DVM -> LOC_SERV : getCurrentLocation()
+    activate LOC_SERV
+    LOC_SERV --> DVM : finalLocationData
+    deactivate LOC_SERV
+else
+    DVM -> DVM : finalLocationData = null
+end
+
+DVM -> REPO : historyId = insertDiagnosis(preparedBitmap, predictions, finalLocationData)
+activate REPO
+REPO -> REPO : saveImageToFile(preparedBitmap)
+REPO -> REPO : insertIntoHistoryDao(...)
+REPO --> DVM : historyId
+deactivate REPO
+
+note right of DVM : onFinishCallback(historyId) is called by DVM
+DVM --> DS : (callback result with historyId)
+deactivate DVM
+
+DS -> NAV : navigate("results/" + historyId)
+activate NAV
+NAV --> DS
+deactivate NAV
+deactivate DS
+
+@enduml
