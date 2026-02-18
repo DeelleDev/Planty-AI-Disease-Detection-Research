@@ -285,19 +285,19 @@ The primary workflow allowing users to identify plant pathologies.
 
 | Laser Scanning UI | Prediction & Confidence | Score-CAM Heatmap (Research) |
 | --- | --- | --- |
-| <img src="screenshots/image74.jpeg" width="800" alt="Workers"> | <img src="screenshots/image32.png" width="800" alt="Workers"> | <img src="screenshots/image36.png" width="800" alt="Workers"> |
+| <img src="screenshots/image74.jpeg" width="300" alt="UI"> | <img src="screenshots/image32.png" width="300" alt="Prediction"> | <img src="screenshots/image36.png" width="300" alt="Score-CAM"> |
 | *Smart Capture Interface* | *95.1% Accuracy Model* | *Attention Visualization* |
 
 ### Ecosystem Modules
 
 | Disease Mapping (GIS) | Weather & Moon Phases | History |
 | --- | --- | --- |
-| <img src="screenshots/image81.jpeg" width="800" alt="Workers"> | <img src="screenshots/image58.jpeg" width="800" alt="Workers"> | <img src="screenshots/image78.jpeg" width="800" alt="Workers"> |
+| <img src="screenshots/image81.jpeg" width="300" alt="GIS"> | <img src="screenshots/image58.jpeg" width="300" alt="Weather"> | <img src="screenshots/image78.jpeg" width="300" alt="History"> |
 | *Outbreak Tracking* | *Agro-Meteorology* | *Local History Base* |
 
 | Results | Bookmarks | Settings |
 | --- | --- | --- |
-| <img src="screenshots/image75.jpeg" width="800" alt="Workers"> | <img src="screenshots/image79.jpeg" width="800" alt="Workers"> | <img src="screenshots/image80.jpg" width="800" alt="Workers"> |
+| <img src="screenshots/image75.jpeg" width="300" alt="Results"> | <img src="screenshots/image79.jpeg" width="300" alt="Bookmarks"> | <img src="screenshots/image80.jpg" width="300" alt="Settings"> |
 | *Result Analysis* | *Bookmarks: Plants or Diseases* | *Settings and Map* |
 
 <table>
@@ -308,14 +308,14 @@ The primary workflow allowing users to identify plant pathologies.
     </thead>
     <tbody>
         <tr>
-            <td><img src="screenshots/image60.jpeg" width="800" alt="Workers"></td>
-            <td><img src="screenshots/image62.jpeg" width="800" alt="Workers"></td>
-            <td><img src="screenshots/image64.jpeg" width="800" alt="Workers"></td>
+            <td><img src="screenshots/image60.jpeg" width="300" alt="Encyclopedia"></td>
+            <td><img src="screenshots/image62.jpeg" width="300" alt="Encyclopedia"></td>
+            <td><img src="screenshots/image64.jpeg" width="300" alt="Encyclopedia"></td>
         </tr>
         <tr>
-            <td><img src="screenshots/image65.jpeg" width="800" alt="Workers"></td>
-            <td><img src="screenshots/image67.jpeg" width="800" alt="Workers"></td>
-            <td><img src="screenshots/image69.jpeg" width="800" alt="Workers"></td>
+            <td><img src="screenshots/image65.jpeg" width="300" alt="Encyclopedia"></td>
+            <td><img src="screenshots/image67.jpeg" width="300" alt="Encyclopedia"></td>
+            <td><img src="screenshots/image69.jpeg" width="300" alt="Encyclopedia"></td>
         </tr>
     </tbody>
     <tfoot>
@@ -333,9 +333,9 @@ The primary workflow allowing users to identify plant pathologies.
     </thead>
     <tbody>
         <tr>
-            <td><img src="screenshots/media1.gif" width="800" alt="Workers"></td>
-            <td><img src="screenshots/media4.gif" width="800" alt="Workers"></td>
-            <td><img src="screenshots/media5.gif" width="800" alt="Workers"></td>
+            <td><img src="screenshots/media1.gif" width="300" alt="Gifs"></td>
+            <td><img src="screenshots/media4.gif" width="300" alt="Gifs"></td>
+            <td><img src="screenshots/media5.gif" width="300" alt="Gifs"></td>
         </tr>
     </tbody>
 </table>
