@@ -295,21 +295,50 @@ The primary workflow allowing users to identify plant pathologies.
 | <img src="screenshots/image81.jpeg" width="800" alt="Workers"> | <img src="screenshots/image58.jpeg" width="800" alt="Workers"> | <img src="screenshots/image78.jpeg" width="800" alt="Workers"> |
 | *Outbreak Tracking* | *Agro-Meteorology* | *Local History Base* |
 
-| Results | Favourites | Settings |
+| Results | Bookmarks | Settings |
 | --- | --- | --- |
-| <img src="screenshots/image81.jpeg" width="800" alt="Workers"> | <img src="screenshots/image58.jpeg" width="800" alt="Workers"> | <img src="screenshots/image78.jpeg" width="800" alt="Workers"> |
-| *Outbreak Tracking* | *Agro-Meteorology* | *Local History Base* |
+| <img src="screenshots/image75.jpeg" width="800" alt="Workers"> | <img src="screenshots/image79.jpeg" width="800" alt="Workers"> | <img src="screenshots/image80.jpg" width="800" alt="Workers"> |
+| *Result Analysis* | *Bookmarks: Plants or Diseases* | *Settings and Map* |
 
-| Encyclopedia |
-| --- |
-| <img src="screenshots/image60.jpeg" width="337" alt="Workers"> <img src="screenshots/image62.jpeg" width="337" alt="Workers"> <img src="screenshots/image64.jpeg" width="337" alt="Workers"> |
-| <img src="screenshots/image65.jpeg" width="337" alt="Workers"> <img src="screenshots/image67.jpeg" width="337" alt="Workers"> <img src="screenshots/image69.jpeg" width="337" alt="Workers"> |
-| *Local Knowledge Base* |
+<table>
+    <thead>
+        <tr>
+            <th colspan="3" style="text-align: center;">Encyclopedia</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><img src="screenshots/image60.jpeg" width="800" alt="Workers"></td>
+            <td><img src="screenshots/image62.jpeg" width="800" alt="Workers"></td>
+            <td><img src="screenshots/image64.jpeg" width="800" alt="Workers"></td>
+        </tr>
+        <tr>
+            <td><img src="screenshots/image65.jpeg" width="800" alt="Workers"></td>
+            <td><img src="screenshots/image67.jpeg" width="800" alt="Workers"></td>
+            <td><img src="screenshots/image69.jpeg" width="800" alt="Workers"></td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" style="text-align: center;"><em>Local Knowledge Base</em></td>
+        </tr>
+    </tfoot>
+</table>
 
-| Gifs |
-| --- |
-| <img src="screenshots/media1.gif" width="337" alt="Workers"> <img src="screenshots/media4.gif" width="337" alt="Workers"> <img src="screenshots/media5.gif" width="337" alt="Workers"> |
----
+<table>
+    <thead>
+        <tr>
+            <th colspan="3" style="text-align: center;">Gifs</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><img src="screenshots/media1.gif" width="800" alt="Workers"></td>
+            <td><img src="screenshots/media4.gif" width="800" alt="Workers"></td>
+            <td><img src="screenshots/media5.gif" width="800" alt="Workers"></td>
+        </tr>
+    </tbody>
+</table>
 
 ## 🚀 Installation
 
